@@ -26,6 +26,12 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderDTO> findAll(){
+        List<Order> list = orderRepository.findAll();
+        return list.stream().map(order -> new OrderDTO((order))).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderDTO> findAllPending(){
         List<Order> list = orderRepository.findPendingOrdersWithProducts();
         return list.stream().map(order -> new OrderDTO((order))).collect(Collectors.toList());
     }
@@ -39,6 +45,21 @@ public class OrderService {
             order.getProducts().add(product);
         }
         order = orderRepository.save(order);
+        return new OrderDTO(order);
+    }
+
+    @Transactional
+    public OrderDTO setDelivered(Long id){
+        Order order = orderRepository.getOne(id);
+        order.setStatus(OrderStatus.DELIVERED);
+        order = orderRepository.save(order);
+        return new OrderDTO(order);
+    }
+
+    @Transactional
+    public OrderDTO delete(Long id){
+        Order order = orderRepository.getOne(id);
+        orderRepository.delete(order);
         return new OrderDTO(order);
     }
 
